@@ -1,0 +1,165 @@
+---
+title: 'CIND 123 - Data Analytics: Basic Methods'
+author: 
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+<center> <h1> Assignment 3 (10%) </h1> </center>
+<center>  <h3> [Ilhak Park] </h2> </center>
+---
+## Instructions 
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. Review this website for more details on using R Markdown <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. Complete the assignment by inserting your R code wherever you see the string "#INSERT YOUR ANSWER HERE".
+
+When you click the **Knit** button, a document (PDF, Word, or HTML format) will be generated that includes both the assignment content as well as the output of any embedded R code chunks.
+
+Submit **both**  the rmd and generated output files. Failing to submit both files will be subject to mark deduction.
+
+## Sample Question and Solution
+
+Use `seq()` to create the vector $(2,4,6,\ldots,20)$.
+
+```{r}
+#Insert your code here.
+seq(2,20,by = 2)
+```
+
+
+## Question 1
+
+Use the following commands to install the `airquality` dataset and load the `datasets` package into your session.
+```{r}
+#install.packages("datasets")
+library(datasets) 
+data(airquality)
+str(airquality)
+```
+
+
+a) Use a histogram to assess the normality of the `Ozone` variable, then explain why it does not appear normally distributed.
+```{r}
+hist(airquality$Ozone)
+#The 'Ozone' variable does not appear normally distributed because the distribution is right skewed. When the histogram skews in such a way that its right side is longer than the left side, as shown, its mean is greater than its median and mode.
+```
+
+b) Create a set of boxplots that shows the distribution of `Ozone` in each month. 
+Use different colors for each month.
+```{r}
+boxplot (Ozone~Month, data = airquality, main = "Distribution of Ozone in each month", xlab = "Month", ylab="Ozone Level", col = c(rep("blue"),rep("darkred"),rep("pink"),rep("darkgreen"),rep("orange")))
+```
+
+
+
+##Question 2
+
+Use the following commands to install the `marketing` dataset and load the `datarium` package into your session.
+```{r}
+library(datarium)
+data("marketing", package = "datarium")
+str(marketing)
+```
+
+a)  Find the covariance between the `Sales` and the advertising budget of `newspaper`. Comment on the output, in terms of the strength and direction of the relationship.
+```{r}
+cov(marketing$sales, marketing$newspaper)
+#cor(marketing$sales, marketing$newspaper, method = "pearson")
+#since their correlation coefficient is 0.228299, they have a weak positive association.
+```
+
+b) Plot the `Sales` as a function of the `Youtube` variable using a scatterplot, then graph the least-square line on the same plot. 
+Hint: You may use the `ggplot()` function from `ggplot2` package. 
+
+```{r}
+library(ggplot2)
+ggplot(marketing,aes(youtube,sales))+geom_point()+geom_smooth(method='lm', formula = y~x)
+```
+
+c) Use the regression line to predict the `Sales` amount when `newspaper` budget is `$136.80K`. Comment on the difference between the output and the expected value. 
+```{r}
+modelSN <- lm(sales~newspaper, data =marketing)
+budget2 <-data.frame(newspaper = c(136.80))
+ansC <- predict(modelSN,budget2)
+#The prediction value for the 'Sales' amount is:
+ansC
+#The difference between the output and the expected value is:
+abs(ansC - marketing$sales[which(round(marketing$newspaper, 1) == 136.80)])
+```
+
+d) Use `newspaper` and `facebook` variables to build a linear regression model to predict `sales`. Display a summary of your model indicating Residuals, Coefficients, ..., etc. What conclusion can you draw from this summary?
+```{r}
+modelNF <- lm(newspaper~facebook, data =marketing)
+summary(modelNF)
+#Intercept of 22.16395 and slope of 0.51943 are observed. Since the p-value is less than 5% for the intercept and slope, we can conclude that the result is highly significant. Also, R-squared value is determined to be 0.1254.
+```
+
+e) Use the regression line to predict the `Sales` amount when `newspaper` budget is `$136.80K` and `facebook` is `$43.92K`.
+```{r}
+saleslm <-lm(sales ~newspaper + facebook, data= marketing )
+salespredict <- data.frame(newspaper = c(136.80), facebook = c(43.92))
+ansE<-predict(saleslm, salespredict)
+ansE
+```
+
+f) What is the difference between the output in (e) and the output in (c)
+```{r}
+#The difference c) and e) is having facebook, which has higher correlation coefficient to sales than newspaper. Therefore, the output e) is more close to the original dataset value, 15, than the output from c).
+#The difference, in value, is 1.626038
+abs (ansC- ansE)
+```
+
+g) Display the correlation matrix of the variables: `youtube`, `facebook`, `newspaper` and `sales`. What conclusion can you draw?
+```{r}
+cor(marketing)
+#They all have positive correlation to each other. Sales has the greatest correlation with Youtube and has the weakest correlation with newspaper. 
+```
+
+h) In your opinion, which statistical test should be used to discuss the relationship between `youtube` and `sales`?
+Hint:  Review the differnce between Pearson and Spearman tests.
+```{r}
+plot(marketing$youtube, marketing$sales)
+cor(marketing$sales, marketing$youtube, method = "pearson")
+cor(marketing$sales, marketing$youtube, method = "spearman")
+#Since marketing and youtube do not show a linear relationship from the plot graph, it is better to use Spearman test than Pearson test. And the Spearman test provides a higher correlation coefficient between youtube and sales.
+```
+
+
+##Question 3
+
+Install the `carData` dataset on your computer using the command `install.packages("carData")`. Then load the `CanPop: Canadian Population Data` into your session using the following command.  The CanPop` has 16 rows and 2 columns and represent the decennial time-series of Canadian population between 1851 and 2001.
+```{r}
+#install.packages("carData")
+library("carData")
+data("CanPop", package = "carData")
+str(CanPop)
+```
+
+a) Which of the two variables is the independent variable and which is the dependent variable? Explain your choice.
+```{r}
+#The variable 'year' is independent and 'population' is dependent because the population changes each value of year. 
+```
+
+b) Assuming that year and population are linearly related, give the equation and the graph of the least-squares regression line.
+Hint: use lm() function.
+```{r}
+lmpop <- lm(population ~year, data= CanPop)
+lmpop
+plot(CanPop$year, CanPop$population) +abline(lmpop)
+#let y be population and let x be year
+#the equation of the least-squares regression line is: y= -337.09856 + 0.18134*x
+```
+
+c) Explain the meaning of the slope and y-intercept for the least-squares regression line in (b).
+```{r}
+summary(lmpop)
+#The least-squares regression line has a y-intercept of -337.09856, which is the point where the line crosses the vertical y-axis and has a slope of 0.18134, which is the steepness of the line in the graph. The R-Squared measure of 0.919 shows that the line is well fitted with the given data.
+```
+
+d) In year 2020, what would you predict the population's size to be.  Does the value of the predicted size matches your expectations? Explain.
+```{r}
+#We have found that a = -337.09856 and b = 0.18134. If we want to predict y from the least squares estimator equation, then y= -337.09856 + 0.18134*(2020), the predicted size would be about 29.20824.
+#I expected it to be higher, around 35, because the data shows a increasing trend of population. One of the reasons that my expectation was off is because the size of the data is small.
+```
